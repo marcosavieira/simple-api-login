@@ -90,6 +90,33 @@ func (q *Queries) GetUserById(ctx context.Context, id int32) (User, error) {
 	return i, err
 }
 
+const getUsersByUsername = `-- name: GetUsersByUsername :many
+SELECT username FROM users WHERE LOWER(username) LIKE CONCAT('%', LOWER($1::text), '%')
+`
+
+func (q *Queries) GetUsersByUsername(ctx context.Context, username string) ([]string, error) {
+	rows, err := q.db.QueryContext(ctx, getUsersByUsername, username)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	items := []string{}
+	for rows.Next() {
+		var username string
+		if err := rows.Scan(&username); err != nil {
+			return nil, err
+		}
+		items = append(items, username)
+	}
+	if err := rows.Close(); err != nil {
+		return nil, err
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return items, nil
+}
+
 const updateUser = `-- name: UpdateUser :one
 UPDATE users SET
     username = COALESCE($1, username),

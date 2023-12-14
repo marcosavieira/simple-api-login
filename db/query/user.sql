@@ -13,6 +13,9 @@ SELECT * FROM users WHERE username = $1 LIMIT 1;
 -- name: GetUserById :one
 SELECT * FROM users WHERE id = $1 LIMIT 1;
 
+-- name: GetUsersByUsername :many
+SELECT username FROM users WHERE LOWER(username) LIKE CONCAT('%', LOWER(@username::text), '%');
+
 -- name: UpdateUser :one
 UPDATE users SET
     username = COALESCE($1, username),

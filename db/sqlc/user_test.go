@@ -54,6 +54,70 @@ func TestGetUserById(t *testing.T) {
 	require.NotEmpty(t, user2.CreatedAt)
 }
 
+func TestGetUsersValidUsername(t *testing.T) {
+	user1 := createRandomUser(t)
+	user2 := createRandomUser(t)
+	user3 := createRandomUser(t)
+
+	listUsers1, err1 := testQueries.GetUsersByUsername(context.Background(), user1.Username)
+	listUsers2, err2 := testQueries.GetUsersByUsername(context.Background(), user2.Username)
+	listUsers3, err3 := testQueries.GetUsersByUsername(context.Background(), user3.Username)
+	listUsersRandom, err := testQueries.GetUsersByUsername(context.Background(), "a")
+
+	require.NoError(t, err)
+	require.NoError(t, err1)
+	require.NoError(t, err2)
+	require.NoError(t, err3)
+	require.NotEmpty(t, user1)
+	require.NotEmpty(t, user2)
+	require.NotEmpty(t, user3)
+	require.NotEmpty(t, listUsers1)
+	require.NotEmpty(t, listUsers2)
+	require.NotEmpty(t, listUsers3)
+	require.NotEmpty(t, listUsersRandom)
+	require.ElementsMatch(t, []string{user1.Username}, listUsers1)
+	require.ElementsMatch(t, []string{user2.Username}, listUsers2)
+	require.ElementsMatch(t, []string{user3.Username}, listUsers3)
+
+}
+
+func TestGetUsersInvalidUsername(t *testing.T) {
+	listUsers, err := testQueries.GetUsersByUsername(context.Background(), "nonexistent")
+
+	require.NoError(t, err)
+	require.Empty(t, listUsers)
+}
+
+func TestGetUsersCorrectUser(t *testing.T) {
+	user := createRandomUser(t)
+
+	listUsers, err := testQueries.GetUsersByUsername(context.Background(), user.Username)
+
+	require.NoError(t, err)
+	require.NotEmpty(t, listUsers)
+	require.ElementsMatch(t, []string{user.Username}, listUsers)
+}
+
+func TestGetUsersContextCancelled(t *testing.T) {
+	user := createRandomUser(t)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+
+	listUsers, err := testQueries.GetUsersByUsername(ctx, user.Username)
+
+	require.Error(t, err)
+	require.Empty(t, listUsers)
+}
+
+func TestGetUsersQueryFail(t *testing.T) {
+	// Simulate a query failure by passing an empty username
+	listUsers, err := testQueries.GetUsersByUsername(context.Background(), "1")
+
+	require.NoError(t, err)
+	require.Empty(t, listUsers)
+}
+
 func TestUpdateUser(t *testing.T) {
 	user1 := createRandomUser(t)
 	arg := UpdateUserParams{
