@@ -8,10 +8,10 @@ dropdb:
 	docker exec -it simple-login dropdb simple_login
 
 migrateup:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_login?sslmode=disable" -verbose up
+	migrate -path db/migration -database "postgresql://postgres:09021328@db-simple-login.co2yqtstfx61.sa-east-1.rds.amazonaws.com?sslmode=require" -verbose up
 
 migratedown:
-	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_login?sslmode=disable" -verbose down
+	migrate -path db/migration -database "postgresql://root:secret@localhost:5432/simple_login?sslmode=require" -verbose down
 
 sqlc:
 	sqlc generate 	
